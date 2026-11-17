@@ -99,6 +99,19 @@ describe.skipIf(!existsSync("dist/cli.js"))("built cli", () => {
       expect(invalid.stdout.toString()).not.toContain("no lessons");
     }
 
+    for (const args of [
+      ["--rule", "no-lights"],
+      ["--error", "THREE.WebGLRenderer: Context Lost."],
+    ]) {
+      const invalid = spawnSync("node", ["dist/cli.js", "lessons", ...args, "--limit", "0"]);
+      expect(invalid.status).toBe(2);
+      expect(invalid.stderr.toString()).toContain('--limit must be a whole number of 1 or more (got "0")');
+    }
+
+    const single = spawnSync("node", ["dist/cli.js", "lessons", "dispose", "--limit", "1", "--json"]);
+    expect(single.status).toBe(0);
+    expect(JSON.parse(single.stdout.toString())).toHaveLength(1);
+
     const limited = spawnSync("node", ["dist/cli.js", "lessons", "--topic", "shadows", "--limit", "1", "--json"]);
     expect(limited.status).toBe(0);
     expect(JSON.parse(limited.stdout.toString())).toHaveLength(1);
